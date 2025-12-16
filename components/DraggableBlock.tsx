@@ -20,8 +20,14 @@ export function DraggableBlock({ id, children, isEnabled, primaryColor = '#9333E
     disabled: !isEnabled,
   })
 
+  // Restrict transform to vertical only
+  const restrictedTransform = transform ? {
+    ...transform,
+    x: 0, // Force x to 0 to prevent horizontal movement
+  } : null
+
   const style = {
-    transform: CSS.Transform.toString(transform),
+    transform: CSS.Transform.toString(restrictedTransform),
     transition,
     opacity: isDragging ? 0.5 : 1,
   }
@@ -61,6 +67,7 @@ export function DraggableBlock({ id, children, isEnabled, primaryColor = '#9333E
         {...dragListeners}
         className="w-full relative rounded-lg transition-all duration-200 cursor-grab active:cursor-grabbing select-none"
         style={{
+          touchAction: 'pan-y', // Only allow vertical panning
           borderLeft: isDragging 
             ? `3px solid ${hexToRgba(primaryColor, 0.5)}` 
             : isHovered 
