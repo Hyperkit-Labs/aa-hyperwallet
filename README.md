@@ -29,7 +29,7 @@ Account Abstraction is a visual builder for smart wallet authentication systems.
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/username/aa-hyperwallet.git
+   git clone https://github.com/hyperkit-labs/aa-hyperwallet.git
    cd aa-hyperwallet
    ```
 
