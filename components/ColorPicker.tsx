@@ -27,7 +27,10 @@ export function ColorPicker({ value, onChange }: ColorPickerProps) {
     <div className="relative">
       <button
         onMouseEnter={() => setShowTooltip(true)}
-        onMouseLeave={() => setShowTooltip(false)}
+        onMouseLeave={() => {
+          setShowTooltip(false)
+          setIsOpen(false)
+        }}
         onClick={() => {
           setIsOpen(!isOpen)
           inputRef.current?.click()
@@ -35,10 +38,16 @@ export function ColorPicker({ value, onChange }: ColorPickerProps) {
         className="w-6 h-6 rounded border border-white/20 shadow-inner cursor-pointer hover:scale-110 transition-transform relative"
         style={{ backgroundColor: value }}
       >
-        {showTooltip && (
-          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-[#1C1C1E] border border-white/10 rounded text-[10px] text-white whitespace-nowrap z-50 pointer-events-none">
-            {value}
-            <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-[#1C1C1E] border-r border-b border-white/10 rotate-45"></div>
+        {showTooltip && !isOpen && (
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 border-2 border-purple-500/50 rounded-lg text-xs font-semibold text-white whitespace-nowrap z-50 pointer-events-none shadow-2xl backdrop-blur-sm">
+            <div className="flex items-center gap-2">
+              <div 
+                className="w-4 h-4 rounded border-2 border-white/30 shadow-inner"
+                style={{ backgroundColor: value }}
+              />
+              <span className="font-mono">{value.toUpperCase()}</span>
+            </div>
+            <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-3 h-3 bg-gray-900 border-r-2 border-b-2 border-purple-500/50 rotate-45"></div>
           </div>
         )}
       </button>
