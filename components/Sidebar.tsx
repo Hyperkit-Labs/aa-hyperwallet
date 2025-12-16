@@ -13,6 +13,7 @@ import {
   FileJson,
   Code2,
   Upload,
+  X,
 } from 'lucide-react'
 import anime from 'animejs'
 import { Toggle } from './Toggle'
@@ -25,6 +26,8 @@ interface SidebarProps {
   onToast: (message: string) => void
   onCopyConfig: () => void
   onCopyReact: () => void
+  isOpen?: boolean
+  onClose?: () => void
 }
 
 export function Sidebar({
@@ -33,12 +36,15 @@ export function Sidebar({
   onToast,
   onCopyConfig,
   onCopyReact,
+  isOpen = true,
+  onClose,
 }: SidebarProps) {
   const sidebarRef = useRef<HTMLElement>(null)
   const [showAccountMenu, setShowAccountMenu] = useState(false)
   const [showPersistenceMenu, setShowPersistenceMenu] = useState(false)
   const [showDurationMenu, setShowDurationMenu] = useState(false)
   const [showSessionsAccordion, setShowSessionsAccordion] = useState(false)
+  const [showPresetAccordion, setShowPresetAccordion] = useState(false)
 
   useEffect(() => {
     if (sidebarRef.current) {
@@ -69,26 +75,85 @@ export function Sidebar({
   }
 
   return (
-    <aside ref={sidebarRef} className="w-80 bg-[#050507] border-r border-white/10 flex flex-col overflow-y-auto shrink-0 z-20">
+    <>
+      {/* Mobile Overlay */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 z-30 lg:hidden"
+          onClick={onClose}
+        />
+      )}
+      <aside
+        ref={sidebarRef}
+        className={`
+          fixed lg:static
+          top-0 left-0 h-full
+          w-80 bg-[#050507] border-r border-white/10 
+          flex flex-col overflow-y-auto shrink-0 z-30 lg:z-20
+          transform transition-transform duration-300 ease-in-out
+          ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        `}
+      >
       {/* Preset Selector */}
-      <div className="sidebar-item p-5 border-b border-white/5 sticky top-0 bg-[#050507] z-10 backdrop-blur-sm">
-        <label className="text-[10px] uppercase font-semibold text-gray-500 tracking-wider mb-2 block">
-          Preset
-        </label>
-        <div className="relative">
-          <select
-            value={config.preset}
-            onChange={(e) => handlePresetChange(e.target.value as keyof typeof PRESETS)}
-            className="w-full bg-[#1C1C1E] border border-white/10 text-white text-xs rounded-lg px-3 py-2.5 appearance-none focus:outline-none focus:border-purple-500 cursor-pointer hover:bg-white/5 transition-colors"
-          >
-            <option value="full">Full Login + Wallets</option>
-            <option value="simple">Simple Login</option>
-            <option value="wallet">Wallet-Only</option>
-          </select>
-          <div className="absolute right-3 top-3 pointer-events-none text-gray-500">
-            <ChevronDown className="w-3.5 h-3.5" />
+      <div className="sidebar-item border-b border-white/5 sticky top-0 bg-[#050507] z-10 backdrop-blur-sm">
+        <button
+          onClick={() => setShowPresetAccordion(!showPresetAccordion)}
+          className="w-full p-5 flex items-center justify-between hover:bg-white/5 transition-colors"
+          aria-expanded={showPresetAccordion}
+          aria-label="Toggle preset options"
+        >
+          <label className="text-[10px] uppercase font-semibold text-gray-500 tracking-wider">
+            Preset
+          </label>
+          {showPresetAccordion ? (
+            <ChevronDown className="w-3.5 h-3.5 text-gray-400 rotate-180 transition-transform" />
+          ) : (
+            <ChevronRight className="w-3.5 h-3.5 text-gray-400 transition-transform" />
+          )}
+        </button>
+        {showPresetAccordion && (
+          <div className="px-5 pb-5 space-y-2">
+            <button
+              onClick={() => {
+                handlePresetChange('full')
+                setShowPresetAccordion(false)
+              }}
+              className={`w-full text-left px-3 py-2.5 rounded-lg text-xs transition-colors ${
+                config.preset === 'full'
+                  ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                  : 'bg-[#1C1C1E] text-gray-300 border border-white/10 hover:bg-white/5 hover:border-white/20'
+              }`}
+            >
+              Full Login + Wallets
+            </button>
+            <button
+              onClick={() => {
+                handlePresetChange('simple')
+                setShowPresetAccordion(false)
+              }}
+              className={`w-full text-left px-3 py-2.5 rounded-lg text-xs transition-colors ${
+                config.preset === 'simple'
+                  ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                  : 'bg-[#1C1C1E] text-gray-300 border border-white/10 hover:bg-white/5 hover:border-white/20'
+              }`}
+            >
+              Simple Login
+            </button>
+            <button
+              onClick={() => {
+                handlePresetChange('wallet')
+                setShowPresetAccordion(false)
+              }}
+              className={`w-full text-left px-3 py-2.5 rounded-lg text-xs transition-colors ${
+                config.preset === 'wallet'
+                  ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                  : 'bg-[#1C1C1E] text-gray-300 border border-white/10 hover:bg-white/5 hover:border-white/20'
+              }`}
+            >
+              Wallet-Only
+            </button>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Authentication */}
@@ -545,35 +610,56 @@ export function Sidebar({
               </div>
 
               <div className="space-y-2">
-                <span className="text-[10px] text-gray-400 block">Custom Logo</span>
-                <label className="w-full border border-dashed border-white/10 bg-[#1C1C1E]/50 h-16 rounded-lg flex flex-col items-center justify-center gap-1 hover:border-purple-500/30 hover:bg-purple-500/5 transition-all group cursor-pointer">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0]
-                      if (file) {
-                        const reader = new FileReader()
-                        reader.onload = (event) => {
-                          onConfigChange({ customLogo: event.target?.result as string })
-                          onToast('Logo uploaded successfully')
-                        }
-                        reader.readAsDataURL(file)
-                      }
-                    }}
-                    className="hidden"
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-gray-400 block">Custom Logo</span>
+                  <Toggle
+                    id="toggle-logo-enabled"
+                    checked={config.customLogoEnabled}
+                    onChange={(checked) => onConfigChange({ customLogoEnabled: checked })}
+                    size="sm"
                   />
-                  {config.customLogo ? (
-                    <img src={config.customLogo} alt="Logo" className="h-10 w-auto" />
-                  ) : (
-                    <>
-                      <Upload className="w-3 h-3 text-gray-500 group-hover:text-purple-400" />
-                      <span className="text-[9px] text-gray-600 group-hover:text-purple-400">
-                        Drag & drop or browse
-                      </span>
-                    </>
-                  )}
-                </label>
+                </div>
+                {config.customLogoEnabled && (
+                  <>
+                    <label className="w-full border border-dashed border-white/10 bg-[#1C1C1E]/50 h-16 rounded-lg flex flex-col items-center justify-center gap-1 hover:border-purple-500/30 hover:bg-purple-500/5 transition-all group cursor-pointer">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (file) {
+                            const reader = new FileReader()
+                            reader.onload = (event) => {
+                              onConfigChange({ customLogo: event.target?.result as string })
+                              onToast('Logo uploaded successfully')
+                            }
+                            reader.readAsDataURL(file)
+                          }
+                        }}
+                        className="hidden"
+                      />
+                      {config.customLogo ? (
+                        <img src={config.customLogo} alt="Logo" className="h-10 w-auto" />
+                      ) : (
+                        <>
+                          <Upload className="w-3 h-3 text-gray-500 group-hover:text-purple-400" />
+                          <span className="text-[9px] text-gray-600 group-hover:text-purple-400">
+                            Drag & drop or browse
+                          </span>
+                        </>
+                      )}
+                    </label>
+                    <div className="flex items-center justify-between pt-1">
+                      <span className="text-[10px] text-gray-400">Replace Title</span>
+                      <Toggle
+                        id="toggle-logo-replace"
+                        checked={config.customLogoReplaceTitle}
+                        onChange={(checked) => onConfigChange({ customLogoReplaceTitle: checked })}
+                        size="sm"
+                      />
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           )}
@@ -612,8 +698,20 @@ export function Sidebar({
         </button>
       </div>
 
-      <div className="h-10"></div>
-    </aside>
+        <div className="h-10"></div>
+        
+        {/* Close Button for Mobile */}
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="lg:hidden absolute top-4 right-4 p-2 hover:bg-white/5 rounded-lg transition-colors z-50"
+            aria-label="Close sidebar"
+          >
+            <X className="w-5 h-5 text-gray-400" />
+          </button>
+        )}
+      </aside>
+    </>
   )
 }
 
